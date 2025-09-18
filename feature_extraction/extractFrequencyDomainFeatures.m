@@ -1,25 +1,21 @@
 function features = extractFrequencyDomainFeatures(x, fs, featureList)
 % EXTRACTFREQUENCYDOMAINFEATURES  Compute selected freq-domain features for one channel.
 %
-%   F = extractFrequencyDomainFeatures(x, fs) returns the default four
-%     features: [meanFreq, medianFreq, bandwidth, flatness].
-%
-%   F = extractFrequencyDomainFeatures(x, fs, FEATURELIST) returns only
-%   the features named in FEATURELIST (a cell-array of strings), in that order.
+%   ... (help text) ...
 %   Supported names are:
-%     {'meanFreq','medianFreq','bandwidth','flatness', ...
-%      'entropy','skewness','kurtosis'}
+%     {'meanFreq','medianFreq','bandwidth','spectral_flatness', ...
+%      'spectral_entropy','spectral_skewness','spectral_kurtosis'}
 
     %--- validate inputs ---------------------------------------------------
     if nargin < 3 || isempty(featureList)
-        featureList = {'meanFreq','medianFreq','bandwidth','flatness'};
+        featureList = {'meanFreq','medianFreq','bandwidth','spectral_flatness'};
     else
         validateattributes(featureList,{'cell'},{'vector'},mfilename,'featureList',3);
     end
 
-    % list of everything supported
-    valid = {'meanFreq','medianFreq','bandwidth','flatness', ...
-             'entropy','skewness','kurtosis'};
+    % --- UPDATED: List of everything supported with new names ---
+    valid = {'meanFreq','medianFreq','bandwidth','spectral_flatness', ...
+             'spectral_entropy','spectral_skewness','spectral_kurtosis'};
     for i = 1:numel(featureList)
         if ~ismember(featureList{i}, valid)
             error('Unknown feature "%s". Supported names are: %s', ...
@@ -37,26 +33,21 @@ function features = extractFrequencyDomainFeatures(x, fs, featureList)
     %--- compute each requested feature ------------------------------------
     for i = 1:nF
         name = featureList{i};
+        % --- UPDATED: Switch statement with new names ---
         switch name
-            case {'meanFreq'}
+            case 'meanFreq'
                 features(i) = sum(f .* Pxx) / sum(Pxx);
-
             case 'medianFreq'
                 features(i) = medfreq(x, fs);
-
             case 'bandwidth'
                 features(i) = obw(x, fs);
-
-            case 'flatness'
+            case 'spectral_flatness'
                 features(i) = geomean(Pxx) / mean(Pxx);
-
-            case 'entropy'
+            case 'spectral_entropy'
                 features(i) = -sum(Pxx .* log(Pxx));
-
-            case 'skewness'
+            case 'spectral_skewness'
                 features(i) = skewness(Pxx);
-
-            case 'kurtosis'
+            case 'spectral_kurtosis'
                 features(i) = kurtosis(Pxx);
         end
     end
