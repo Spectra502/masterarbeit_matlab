@@ -1,21 +1,27 @@
 function processSizaSignals(dataFolder, baseOutputFolder, filterType, numTeeth, augmentations, enablePlotting, featureParams, augParams)
 %PROCESSSIZASIGNALS Processes all signals within a single SIZA data folder.
 
-    % --- 1. Dynamic Path Construction for FS Summary File ---
+    % --- 1. Dynamic Path Construction for FS Summary File (NOW A .MAT FILE) ---
     [~, label] = fileparts(dataFolder);
-    fs_results_folder_name = sprintf('%s_csv_calculated_frequencies', label);
+    fs_results_folder_name = sprintf('%s_csv_calculated_frequencies', label); % Folder name can stay the same
     fs_results_folder_path = fullfile(dataFolder, fs_results_folder_name);
-    fs_csv_filename = sprintf('%s.csv', fs_results_folder_name);
-    fs_summary_csv_path = fullfile(fs_results_folder_path, fs_csv_filename);
-
-    % --- 2. Load Sampling Frequencies ---
-    fprintf('Loading sampling frequency data from:\n  %s\n', fs_summary_csv_path);
-    if ~exist(fs_summary_csv_path, 'file')
-        error('FS summary CSV not found. Expected Path: %s', fs_summary_csv_path);
+    % Change the expected file extension to .mat
+    fs_summary_mat_filename = sprintf('%s_calculated_frequencies.mat', label);
+    fs_summary_mat_path = fullfile(fs_results_folder_path, fs_summary_mat_filename);
+    
+    % --- 2. Load Sampling Frequencies from .MAT File ---
+    fprintf('Loading sampling frequency data from:\n  %s\n', fs_summary_mat_path);
+    if ~exist(fs_summary_mat_path, 'file')
+        error('FS summary MAT file not found. Expected Path: %s', fs_summary_mat_path);
     end
-    fs_table = readtable(fs_summary_csv_path);
+    
+    % Load the .mat file. This creates a struct in the workspace.
+    loaded_data = load(fs_summary_mat_path);
+    % Extract the table from the loaded struct
+    fs_table = loaded_data.summary_table;
+    
     fs_map = containers.Map(fs_table.Filename, fs_table.EstimatedFS);
-
+    
     % --- 3. File Discovery ---
     files = dir(fullfile(dataFolder, '*.csv'));
     validFiles = {};
@@ -25,12 +31,12 @@ function processSizaSignals(dataFolder, baseOutputFolder, filterType, numTeeth, 
     if isempty(validFiles), warning('No valid .csv signal files found in %s.', dataFolder); return; end
     fprintf('Found %d valid signal files to process.\n', numel(validFiles));
 
-    % --- 4. Parallel Processing ---
+    % --- 4. Parallel Processing (NO CHANGES BELOW THIS LINE) ---
     parfor k = 1:numel(validFiles)
         file_info = validFiles{k};
         fname_with_ext = file_info.name;
         full_path = fullfile(file_info.folder, fname_with_ext);
-
+        
         try
             % --- 4.1. Load Data and Metadata ---
             signal_table = readtable(full_path);

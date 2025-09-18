@@ -33,7 +33,7 @@ function process_siza_folders(dataFolders)
         fprintf('Results will be saved in: %s\n', output_folder_path);
         
         % Call the analysis function which contains the parallel loop
-        analyze_siza_csv_files(current_folder, output_folder_path, label);
+        analyze_siza_to_mat(current_folder, output_folder_path, label);
     end
     
     % --- Clean up the parallel pool ---
