@@ -25,7 +25,7 @@ function filteredSignal = bandpassGearMesh(signal, fs, rpm, numTeeth, bw, order)
         order = 4;
     end
     if nargin < 5 || isempty(bw)
-        bw = 10;  % Hz
+        bw = 50;  % Hz
     end
 
     % compute gear-mesh freq
